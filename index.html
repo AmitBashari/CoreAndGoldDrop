@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Elegant Combat Loot Drop Mock-up</title>
+<style>
+  :root{
+    --sky-1:#5c90b3;
+    --sky-2:#9ac6d1;
+    --mountain:#6f8d9a;
+    --ground:#516f55;
+    --ground-dark:#263d31;
+    --strip:#8e765a;
+    --strip-light:#bda17c;
+    --ui:#20262b;
+    --ui-soft:rgba(20,25,29,.82);
+    --white:#f8f6eb;
+    --gold:#ffd45a;
+    --green:#65d06f;
+  }
+
+  *{box-sizing:border-box}
+
+  html,body{
+    width:100%;
+    height:100%;
+    margin:0;
+    background:#10171a;
+    font-family:Inter, ui-rounded, "Arial Rounded MT Bold", system-ui, sans-serif;
+    overflow:hidden;
+    color:white;
+  }
+
+  body{
+    display:grid;
+    place-items:center;
+  }
+
+  .game{
+    position:relative;
+    width:min(100vw, 430px);
+    height:min(100vh, 820px);
+    overflow:hidden;
+    background:
+      linear-gradient(to bottom, var(--sky-1) 0%, var(--sky-2) 44%, #c4d8c8 45%, #6d8d68 67%, #445d48 100%);
+    isolation:isolate;
+    box-shadow:0 24px 80px rgba(0,0,0,.45);
+  }
+
+  .game::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:
+      radial-gradient(circle at 50% 20%, rgba(255,255,255,.28), transparent 28%),
+      linear-gradient(to bottom, transparent 62%, rgba(12,24,16,.2));
+  }
+
+  .mountains,
+  .mountains::before,
+  .mountains::after{
+    position:absolute;
+    content:"";
+    left:-15%;
+    width:130%;
+    height:260px;
+    bottom:300px;
+    clip-path:polygon(0 72%, 9% 58%, 17% 65%, 28% 34%, 39% 65%, 47% 47%, 58% 69%, 68% 38%, 79% 61%, 88% 42%, 100% 71%, 100% 100%, 0 100%);
+  }
+
+  .mountains{
+    background:#6b8790;
+    opacity:.42;
+  }
+
+  .mountains::before{
+    left:0;
+    bottom:-22px;
+    background:#78969a;
+    opacity:.55;
+    transform:scaleX(.92);
+  }
+
+  .mountains::after{
+    left:0;
+    bottom:-58px;
+    background:#5d7a73;
+    opacity:.76;
+    transform:scaleX(1.08);
+  }
+
+  .top-ui{
+    position:absolute;
+    z-index:20;
+    top:14px;
+    left:14px;
+    right:14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+
+  .pill{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    height:42px;
+    padding:0 12px;
+    border-radius:15px;
+    background:rgba(21,27,31,.78);
+    border:1px solid rgba(255,255,255,.12);
+    backdrop-filter:blur(12px);
+    box-shadow:0 8px 20px rgba(0,0,0,.2);
+    font-weight:900;
+    font-size:13px;
+  }
+
+  .currency-icon{
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:linear-gradient(145deg,#fff185,#f3a51c);
+    border:3px solid #8c5417;
+    box-shadow:inset 0 0 0 2px #ffd95a;
+  }
+
+  .progress-wrap{
+    position:absolute;
+    z-index:20;
+    top:70px;
+    left:24px;
+    right:24px;
+  }
+
+  .progress-label{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:6px;
+    font-weight:900;
+    font-size:11px;
+    text-shadow:0 2px 4px rgba(0,0,0,.35);
+  }
+
+  .progress{
+    height:12px;
+    padding:2px;
+    border-radius:999px;
+    background:rgba(30,35,38,.78);
+    box-shadow:0 3px 0 rgba(0,0,0,.22);
+  }
+
+  .progress > span{
+    display:block;
+    width:64%;
+    height:100%;
+    border-radius:inherit;
+    background:linear-gradient(90deg,#f3cf55,#f5a936);
+  }
+
+  .fight-strip{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:118px;
+    height:315px;
+    overflow:hidden;
+  }
+
+  .fight-strip::before{
+    content:"";
+    position:absolute;
+    left:-8%;
+    right:-8%;
+    bottom:0;
+    height:175px;
+    background:
+      linear-gradient(to bottom, rgba(255,255,255,.14), transparent 22%),
+      linear-gradient(to bottom, var(--strip-light), var(--strip));
+    border-top:2px solid rgba(255,255,255,.22);
+    clip-path:polygon(0 20%, 100% 0, 100% 100%, 0 100%);
+    box-shadow:inset 0 12px 18px rgba(255,255,255,.05);
+  }
+
+  .fight-strip::after{
+    content:"";
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    height:58px;
+    background:linear-gradient(to bottom, rgba(40,31,23,0), rgba(28,24,20,.45));
+    pointer-events:none;
+    z-index:9;
+  }
+
+  .back-grass{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:128px;
+    height:42px;
+    opacity:.7;
+    background:
+      radial-gradient(ellipse at 8% 100%, #46684d 0 24%, transparent 26%),
+      radial-gradient(ellipse at 24% 100%, #557a56 0 28%, transparent 30%),
+      radial-gradient(ellipse at 52% 100%, #3d6447 0 26%, transparent 28%),
+      radial-gradient(ellipse at 78% 100%, #4b704d 0 28%, transparent 30%),
+      radial-gradient(ellipse at 95% 100%, #3f6546 0 25%, transparent 27%);
+  }
+
+  .hero,
+  .enemy{
+    position:absolute;
+    bottom:74px;
+    width:84px;
+    height:112px;
+    z-index:4;
+    filter:drop-shadow(0 10px 8px rgba(0,0,0,.25));
+  }
+
+  .hero{ left:38px; }
+  .enemy{ right:44px; }
+
+  .body{
+    position:absolute;
+    left:20px;
+    bottom:0;
+    width:44px;
+    height:72px;
+    border-radius:22px 22px 14px 14px;
+  }
+
+  .hero .body{
+    background:linear-gradient(#5fc6df,#2b6c87);
+    border:4px solid #173f52;
+  }
+
+  .enemy .body{
+    background:linear-gradient(#8ed15b,#4d813d);
+    border:4px solid #294d27;
+  }
+
+  .head{
+    position:absolute;
+    left:14px;
+    top:0;
+    width:56px;
+    height:52px;
+    border-radius:50% 50% 44% 44%;
+  }
+
+  .hero .head{
+    background:#f1d6aa;
+    border:4px solid #5b3f2a;
+  }
+
+  .enemy .head{
+    background:#7fc85d;
+    border:4px solid #294d27;
+  }
+
+  .hero .head::before{
+    content:"";
+    position:absolute;
+    left:7px;
+    top:-12px;
+    width:40px;
+    height:20px;
+    border-radius:50% 50% 25% 25%;
+    background:#6b4631;
+  }
+
+  .enemy .head::before,
+  .enemy .head::after{
+    content:"";
+    position:absolute;
+    top:-15px;
+    width:13px;
+    height:24px;
+    background:#d7c38a;
+    border:3px solid #5d542f;
+    border-radius:50% 50% 20% 20%;
+  }
+
+  .enemy .head::before{ left:4px; transform:rotate(-20deg); }
+  .enemy .head::after{ right:4px; transform:rotate(20deg); }
+
+  .eye{
+    position:absolute;
+    top:23px;
+    width:6px;
+    height:7px;
+    border-radius:50%;
+    background:#1c2528;
+  }
+
+  .eye.left{ left:14px; }
+  .eye.right{ right:14px; }
+
+  .weapon{
+    position:absolute;
+    width:10px;
+    height:74px;
+    border-radius:8px;
+    background:#7f5b32;
+    bottom:10px;
+  }
+
+  .hero .weapon{
+    right:9px;
+    transform:rotate(23deg);
+  }
+
+  .enemy .weapon{
+    left:4px;
+    transform:rotate(-22deg);
+  }
+
+  .enemy.hit{
+    animation:enemyHit 420ms ease-out both;
+  }
+
+  @keyframes enemyHit{
+    0%{transform:translateX(0) rotate(0); opacity:1; filter:brightness(1)}
+    18%{transform:translateX(8px) rotate(5deg); filter:brightness(2)}
+    42%{transform:translateX(-5px) rotate(-4deg); filter:brightness(1.2)}
+    100%{transform:translateX(18px) translateY(12px) rotate(17deg) scale(.82); opacity:0}
+  }
+
+  .slash{
+    position:absolute;
+    right:98px;
+    bottom:150px;
+    width:96px;
+    height:14px;
+    border-radius:50%;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.95), transparent);
+    transform:rotate(-24deg) scaleX(.2);
+    opacity:0;
+    z-index:8;
+    filter:blur(.3px);
+  }
+
+  .slash.active{
+    animation:slash 250ms ease-out both;
+  }
+
+  @keyframes slash{
+    0%{opacity:0; transform:rotate(-24deg) scaleX(.2)}
+    28%{opacity:1; transform:rotate(-24deg) scaleX(1)}
+    100%{opacity:0; transform:rotate(-24deg) translateX(28px) scaleX(1.15)}
+  }
+
+  .loot{
+    position:absolute;
+    z-index:7;
+    width:44px;
+    height:44px;
+    left:calc(100% - 106px);
+    bottom:98px;
+    opacity:0;
+    pointer-events:none;
+    will-change:transform, opacity;
+  }
+
+  .lamp{
+    border-radius:45% 45% 38% 38%;
+    background:
+      radial-gradient(circle at 35% 25%, #c8ffb5 0 10%, transparent 11%),
+      linear-gradient(145deg,#7ce46f,#2f9449 62%,#1f5c38);
+    border:4px solid #1a5331;
+    box-shadow:
+      inset 4px 4px 0 rgba(255,255,255,.16),
+      0 6px 0 #143a27,
+      0 10px 16px rgba(0,0,0,.28);
+  }
+
+  .lamp::before{
+    content:"";
+    position:absolute;
+    left:14px;
+    top:-10px;
+    width:12px;
+    height:13px;
+    border-radius:4px 4px 1px 1px;
+    background:#9adf69;
+    border:3px solid #245f38;
+  }
+
+  .lamp::after{
+    content:"";
+    position:absolute;
+    left:8px;
+    bottom:-5px;
+    width:20px;
+    height:8px;
+    border-radius:50%;
+    background:rgba(15,48,26,.28);
+    filter:blur(1px);
+  }
+
+  .coin{
+    border-radius:50%;
+    background:
+      radial-gradient(circle at 34% 27%, #fff5a4 0 9%, transparent 10%),
+      linear-gradient(145deg,#ffe766,#f5b52b 58%,#d77c14);
+    border:4px solid #8d5517;
+    box-shadow:
+      inset 0 0 0 3px #ffd85a,
+      0 5px 0 #75400e,
+      0 10px 14px rgba(0,0,0,.25);
+  }
+
+  .coin::before{
+    content:"";
+    position:absolute;
+    inset:11px;
+    border-radius:50%;
+    border:3px solid rgba(169,92,16,.55);
+  }
+
+  .loot.lamp{
+    left:calc(100% - 122px);
+    offset-path:path("M 0 0 Q -12 -74 -27 30");
+    offset-rotate:0deg;
+  }
+
+  .loot.coin{
+    left:calc(100% - 74px);
+    offset-path:path("M 0 0 Q 4 -76 11 30");
+    offset-rotate:0deg;
+  }
+
+  .loot.lamp.active,
+  .loot.coin.active{
+    animation:lootArcThenFade 362ms linear both;
+  }
+
+  @keyframes lootArcThenFade{
+    0%{
+      opacity:0;
+      offset-distance:0%;
+      transform:scale(.9);
+    }
+    4%{
+      opacity:1;
+      offset-distance:8%;
+      transform:scale(.94);
+    }
+    24%{
+      opacity:1;
+      offset-distance:48%;
+      transform:scale(.98);
+    }
+    52%{
+      opacity:1;
+      offset-distance:88%;
+      transform:scale(.97);
+    }
+    60%{
+      opacity:1;
+      offset-distance:100%;
+      transform:scale(.96);
+    }
+    100%{
+      opacity:0;
+      offset-distance:100%;
+      transform:scale(.96);
+    }
+  }
+
+  .plus-one{
+    position:absolute;
+    z-index:10;
+    right:90px;
+    bottom:128px;
+    font-size:25px;
+    line-height:1;
+    font-weight:1000;
+    letter-spacing:-1px;
+    opacity:0;
+    pointer-events:none;
+    will-change:transform, opacity;
+    backface-visibility:hidden;
+    color:var(--white);
+    text-shadow:
+      0 3px 0 rgba(20,24,26,.55),
+      0 5px 8px rgba(0,0,0,.3);
+    -webkit-text-stroke:3px rgba(27,33,36,.9);
+    paint-order:stroke fill;
+  }
+
+  .plus-one.lamp-plus{
+    right:127px;
+    color:#b8ff94;
+  }
+
+  .plus-one.coin-plus{
+    right:75px;
+    color:#ffe470;
+  }
+
+  .plus-one.active{
+    animation:plusOneMove 560ms linear both, plusOneFade 560ms linear both;
+  }
+
+  @keyframes plusOneMove{
+    from{
+      transform:translate3d(0, 2px, 0) scale(1);
+    }
+    to{
+      transform:translate3d(0, -16px, 0) scale(1);
+    }
+  }
+
+  @keyframes plusOneFade{
+    0%{
+      opacity:0;
+    }
+    12%{
+      opacity:1;
+    }
+    72%{
+      opacity:1;
+    }
+    100%{
+      opacity:0;
+    }
+  }
+
+  .tiny-spark{
+    position:absolute;
+    z-index:8;
+    width:5px;
+    height:5px;
+    border-radius:50%;
+    opacity:0;
+    pointer-events:none;
+  }
+
+  .tiny-spark.active{
+    animation:spark 470ms ease-out both;
+  }
+
+  @keyframes spark{
+    0%{opacity:0; transform:translate(0,0) scale(.4)}
+    22%{opacity:.9}
+    100%{opacity:0; transform:translate(var(--x),var(--y)) scale(.1)}
+  }
+
+  .bottom-ui{
+    position:absolute;
+    z-index:20;
+    left:0;
+    right:0;
+    bottom:0;
+    height:118px;
+    padding:14px;
+    display:grid;
+    grid-template-columns:70px 1fr 70px;
+    align-items:center;
+    gap:12px;
+    background:linear-gradient(to bottom,rgba(22,28,31,.95),#11171a);
+    border-top:1px solid rgba(255,255,255,.1);
+    box-shadow:0 -14px 30px rgba(0,0,0,.22);
+  }
+
+  .skill{
+    height:66px;
+    border-radius:18px;
+    background:linear-gradient(#303b42,#1f272c);
+    border:2px solid rgba(255,255,255,.1);
+    box-shadow:inset 0 -5px 0 rgba(0,0,0,.22);
+    display:grid;
+    place-items:center;
+    font-size:27px;
+  }
+
+  .battle-button{
+    height:64px;
+    border:0;
+    border-radius:18px;
+    cursor:pointer;
+    color:#152128;
+    background:linear-gradient(#ffda64,#e99c2f);
+    box-shadow:
+      inset 0 -6px 0 rgba(137,76,17,.45),
+      0 7px 14px rgba(0,0,0,.28);
+    font:inherit;
+    font-weight:1000;
+    font-size:15px;
+    transition:transform 80ms ease;
+  }
+
+  .battle-button:active{
+    transform:translateY(4px);
+    box-shadow:
+      inset 0 -2px 0 rgba(137,76,17,.45),
+      0 3px 6px rgba(0,0,0,.22);
+  }
+
+  .caption{
+    position:absolute;
+    left:18px;
+    bottom:126px;
+    z-index:30;
+    color:rgba(255,255,255,.64);
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.3px;
+    text-shadow:0 2px 3px rgba(0,0,0,.3);
+  }
+
+  .damage{
+    position:absolute;
+    z-index:11;
+    right:74px;
+    bottom:232px;
+    font-weight:1000;
+    font-size:27px;
+    color:#fff1d7;
+    -webkit-text-stroke:4px #8c2d21;
+    paint-order:stroke fill;
+    opacity:0;
+    transform:translateY(8px) scale(.7);
+    text-shadow:0 3px 0 rgba(0,0,0,.25);
+  }
+
+  .damage.active{
+    animation:damage 620ms ease-out both;
+  }
+
+  @keyframes damage{
+    0%{opacity:0; transform:translateY(12px) scale(.55)}
+    20%{opacity:1; transform:translateY(-8px) scale(1.2)}
+    40%{transform:translateY(-5px) scale(.96)}
+    72%{opacity:1}
+    100%{opacity:0; transform:translateY(-42px) scale(.86)}
+  }
+
+  @media (max-height:700px){
+    .fight-strip{bottom:102px;height:286px}
+    .bottom-ui{height:102px}
+    .caption{bottom:109px}
+    .hero,.enemy{bottom:62px}
+    .loot{bottom:116px}
+    .plus-one{bottom:195px}
+    .damage{bottom:218px}
+  }
+</style>
+</head>
+<body>
+<main class="game">
+  <div class="mountains"></div>
+
+  <div class="top-ui">
+    <div class="pill">World 1-8</div>
+    <div class="pill"><span class="currency-icon"></span><span id="coinCount">124</span></div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Battle Progress</span><span>6 / 10</span></div>
+    <div class="progress"><span></span></div>
+  </div>
+
+  <section class="fight-strip" id="fightStrip">
+    <div class="back-grass"></div>
+
+    <div class="hero">
+      <div class="head">
+        <span class="eye left"></span>
+        <span class="eye right"></span>
+      </div>
+      <div class="body"></div>
+      <div class="weapon"></div>
+    </div>
+
+    <div class="enemy" id="enemy">
+      <div class="head">
+        <span class="eye left"></span>
+        <span class="eye right"></span>
+      </div>
+      <div class="body"></div>
+      <div class="weapon"></div>
+    </div>
+
+    <div class="slash" id="slash"></div>
+    <div class="damage" id="damage">248</div>
+
+    <div class="loot lamp" id="lamp"></div>
+    <div class="loot coin" id="coin"></div>
+
+    <div class="plus-one lamp-plus" id="lampPlus">+1</div>
+    <div class="plus-one coin-plus" id="coinPlus">+1</div>
+  </section>
+
+  <div class="caption">Each currency still drops from a different side, but now lands 50% closer to the enemy.</div>
+
+  <section class="bottom-ui">
+    <div class="skill">🛡️</div>
+    <button class="battle-button" id="replay">Defeat Enemy</button>
+    <div class="skill">⚔️</div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const enemy = document.getElementById('enemy');
+  const slash = document.getElementById('slash');
+  const damage = document.getElementById('damage');
+  const lamp = document.getElementById('lamp');
+  const coin = document.getElementById('coin');
+  const lampPlus = document.getElementById('lampPlus');
+  const coinPlus = document.getElementById('coinPlus');
+  const fightStrip = document.getElementById('fightStrip');
+  const replay = document.getElementById('replay');
+  const coinCount = document.getElementById('coinCount');
+
+  let running = false;
+  let totalCoins = 124;
+
+  function restart(el, cls='active'){
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+  }
+
+  function resetEnemy(){
+    enemy.classList.remove('hit');
+    enemy.style.opacity = '1';
+    enemy.style.transform = '';
+  }
+
+  function makeSparks(x, y, color){
+    for(let i=0;i<5;i++){
+      const s = document.createElement('span');
+      s.className = 'tiny-spark';
+      s.style.left = x + 'px';
+      s.style.bottom = y + 'px';
+      s.style.background = color;
+      const angle = (-150 + i*38) * Math.PI/180;
+      const d = 18 + i*4;
+      s.style.setProperty('--x', Math.cos(angle)*d + 'px');
+      s.style.setProperty('--y', Math.sin(angle)*d + 'px');
+      fightStrip.appendChild(s);
+      void s.offsetWidth;
+      s.classList.add('active');
+      setTimeout(()=>s.remove(), 520);
+    }
+  }
+
+  function play(){
+    if(running) return;
+    running = true;
+
+    [lamp, coin, lampPlus, coinPlus, slash, damage].forEach(el=>el.classList.remove('active'));
+    resetEnemy();
+
+    setTimeout(()=>restart(slash), 100);
+    setTimeout(()=>restart(damage), 150);
+
+    setTimeout(()=>{
+      enemy.classList.add('hit');
+    }, 180);
+
+    setTimeout(()=>{
+      restart(lamp);
+      restart(coin);
+      makeSparks(282, 132, '#aaff8c');
+      makeSparks(327, 129, '#ffe06a');
+    }, 410);
+
+    setTimeout(()=>restart(lampPlus), 627);
+    setTimeout(()=>restart(coinPlus), 627);
+
+    setTimeout(()=>{
+      totalCoins += 1;
+      coinCount.textContent = totalCoins;
+    }, 670);
+
+    setTimeout(()=>{
+      resetEnemy();
+      running = false;
+    }, 2200);
+  }
+
+  replay.addEventListener('click', play);
+  fightStrip.addEventListener('click', play);
+
+  setTimeout(play, 500);
+})();
+</script>
+</body>
+</html>
